@@ -1,0 +1,70 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-sisgrade}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-sisgrade}
+      POSTGRES_DB: ${POSTGRES_DB:-sisgrade}
+    volumes:
+      - .data/postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-sisgrade} -d ${POSTGRES_DB:-sisgrade}"]
+      interval: 2s
+      timeout: 5s
+      retries: 10
+    networks:
+      - app
+
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-sisgrade}:${POSTGRES_PASSWORD:-sisgrade}@db:5432/${POSTGRES_DB:-sisgrade}
+      JWT_SECRET: ${JWT_SECRET}
+      NODE_ENV: production
+      # CORS mora tačno odgovarati domeni frontenda
+      CORS_ORIGIN: ${CORS_ORIGIN:-https://1is.crnic.org}
+    networks:
+      - app
+      - localproxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=localproxy"
+
+      # API na /api (NE stripPrefix)
+      - "traefik.http.routers.1is-api.rule=Host(`1is.crnic.org`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.1is-api.entrypoints=private-https"
+      - "traefik.http.routers.1is-api.tls=true"
+      - "traefik.http.services.1is-api.loadbalancer.server.port=3000"
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        # Leave empty so the app uses relative /api (same origin). Set only if API is on a different origin.
+        VITE_API_URL: ${VITE_API_URL:-}
+    depends_on:
+      - api
+    networks:
+      - app
+      - localproxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=localproxy"
+
+      # Frontend sve osim /api
+      - "traefik.http.routers.1is.rule=Host(`1is.crnic.org`) && !PathPrefix(`/api`)"
+      - "traefik.http.routers.1is.entrypoints=private-https"
+      - "traefik.http.routers.1is.tls=true"
+      - "traefik.http.services.1is.loadbalancer.server.port=80"
+
+networks:
+  app:
+    driver: bridge
+  localproxy:
+    external: true

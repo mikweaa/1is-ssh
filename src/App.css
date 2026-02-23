@@ -1,0 +1,218 @@
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+.backBtn {
+  position: absolute;
+  left: 20px;
+  background: none;
+  border: none;
+  font-size: 32px;
+  cursor: pointer;
+  color: inherit;
+  padding: 0;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.backBtn:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.backBtn:active {
+  transform: scale(0.95);
+}
+
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #61dafbaa);
+}
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+.card {
+  padding: 2em;
+}
+
+.read-the-docs {
+  color: #888;
+}
+/* Elective Card Styling */
+.electiveCard {
+  border-left: 4px solid #fbbf24;
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.03) 0%, transparent 100%);
+}
+
+.electiveLabel {
+  display: inline-block;
+  background-color: #fbbf24;
+  color: #1f2937;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-left: 8px;
+}
+
+.editItemNameInput {
+  border: 2px solid #3b82f6;
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 0.875rem;
+  font-family: inherit;
+}
+
+.editItemNameInput:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.editSubjectNameInput {
+  border-radius: 0 !important;
+  -webkit-border-radius: 0 !important;
+  /* Reset all default input styling */
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  appearance: none !important;
+  
+  /* Remove all borders and backgrounds */
+  border: 0 !important;
+  border-top: 0 !important;
+  border-right: 0 !important;
+  border-bottom: 0 !important;
+  border-left: 0 !important;
+  outline: 0 !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
+  -webkit-box-shadow: none !important;
+  -moz-box-shadow: none !important;
+  
+  /* Padding and margins */
+  padding: 0 !important;
+  margin: 0 !important;
+  
+  /* Typography */
+  font: inherit !important;
+  color: inherit !important;
+  
+  /* Layout */
+  width: auto !important;
+  flex: 1 !important;
+  min-width: 0 !important;
+  display: block !important;
+  box-sizing: border-box !important;
+}
+
+.editSubjectNameEditable {
+  font: inherit;
+  color: inherit;
+  display: block;
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  box-shadow: none;
+  border-radius: 0;
+  -webkit-tap-highlight-color: transparent;
+  caret-color: currentColor;
+  line-height: 1.2;
+  min-height: 1.2em;
+  position: relative;
+  white-space: normal;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+.editSubjectNameEditable[data-empty="true"]::before {
+  content: attr(data-placeholder);
+  opacity: 0.4;
+  font-style: italic;
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  pointer-events: none;
+}
+
+.editSubjectNameEditable[data-empty="true"] {
+  line-height: 1.2;
+}
+
+.editSubjectNameEditable:focus {
+  outline: none;
+  border: 0;
+  box-shadow: none;
+}
+
+.editSubjectNameInput:focus {
+  outline: 0 !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  -webkit-box-shadow: none !important;
+}
+
+.cardHeader .editSubjectNameInput {
+  border: 0 !important;
+  background: transparent !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  font: inherit !important;
+}
+
+.cardHeader .editSubjectNameInput:focus {
+  border: 0 !important;
+}
+
+.yearDivider {
+  height: 1px;
+  background-color: #d1d5db;
+  margin: 16px 0 12px 0;
+}
+
+.yearLabel {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #6b7280;
+  padding: 8px 0 8px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
