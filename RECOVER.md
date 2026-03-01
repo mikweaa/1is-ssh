@@ -7,7 +7,7 @@
 
 ---
 
-## If you're using Docker (e.g. https://1is.crnic.org)
+## If you're using Docker (e.g. https://1nteger.org)
 
 ### 1. Reset the stack with your new password
 
@@ -45,7 +45,7 @@ You should see something like `Server listening on port 3000`. If you see DB con
 
 ### 3. Try Register again
 
-Open **https://1is.crnic.org** (or your real URL), go to Register, and submit the form. It should hit the API and either succeed or show a real error (e.g. "Email already registered").
+Open **https://1nteger.org** (or your real URL), go to Register, and submit the form. It should hit the API and either succeed or show a real error (e.g. "Email already registered").
 
 ---
 
@@ -78,7 +78,7 @@ Use the form at http://localhost:5173. "Not found." should go away if the API is
 
 ## Quick test: is the API reachable?
 
-- **Docker:** open `https://1is.crnic.org/api/` in the browser (or `curl -k https://1is.crnic.org/api/`). You should see `{"service":"sis-grade-api","ok":true}`.
+- **Docker:** open `https://1nteger.org/api/` in the browser (or `curl -k https://1nteger.org/api/`). You should see `{"service":"sis-grade-api","ok":true}`.
 - **Local:** open `http://localhost:3000/` (with API running). Same JSON.
 
 If that fails, the API isn’t reachable; fix that first (logs, container status, or start API locally).

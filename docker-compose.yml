@@ -27,7 +27,7 @@ services:
       JWT_SECRET: ${JWT_SECRET}
       NODE_ENV: production
       # CORS needs to match the domain exactly
-      CORS_ORIGIN: ${CORS_ORIGIN:-https://1is.crnic.org}
+      CORS_ORIGIN: ${CORS_ORIGIN:-https://1nteger.org}
     networks:
       - app
       - localproxy
@@ -35,7 +35,7 @@ services:
       - "traefik.enable=true"
       - "traefik.docker.network=localproxy"
 
-      - "traefik.http.routers.1is-api.rule=Host(`1is.crnic.org`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.1is-api.rule=Host(`1nteger.org`) && PathPrefix(`/api`)"
       - "traefik.http.routers.1is-api.entrypoints=private-https"
       - "traefik.http.routers.1is-api.tls=true"
       - "traefik.http.services.1is-api.loadbalancer.server.port=3000"
@@ -57,7 +57,7 @@ services:
       - "traefik.docker.network=localproxy"
 
       # Frontend everything except /api
-      - "traefik.http.routers.1is.rule=Host(`1is.crnic.org`) && !PathPrefix(`/api`)"
+      - "traefik.http.routers.1is.rule=Host(`1nteger.org`) && !PathPrefix(`/api`)"
       - "traefik.http.routers.1is.entrypoints=private-https"
       - "traefik.http.routers.1is.tls=true"
       - "traefik.http.services.1is.loadbalancer.server.port=80"
