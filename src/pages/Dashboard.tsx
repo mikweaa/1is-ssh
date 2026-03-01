@@ -272,6 +272,8 @@ export default function Dashboard() {
   const [undoTimeoutId, setUndoTimeoutId] = useState<number | null>(null);
   const [namedElectives, setNamedElectives] = useState<Set<string>>(new Set());
   const editInputRef = useRef<HTMLSpanElement>(null);
+  const [pendingScrollSubject, setPendingScrollSubject] = useState<string | null>(null);
+  const subjectRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   const [preferSingleTapEdit, setPreferSingleTapEdit] = useState(false);
   useEffect(() => {
@@ -511,6 +513,16 @@ export default function Dashboard() {
       }
     };
   }, [undoTimeoutId]);
+
+  useEffect(() => {
+    if (!overviewMode && pendingScrollSubject) {
+      const el = subjectRefs.current[pendingScrollSubject];
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+      setPendingScrollSubject(null);
+    }
+  }, [overviewMode, pendingScrollSubject]);
 
   function scheduleUndoCleanup() {
     setShowUndoPopup(true);
@@ -1349,7 +1361,14 @@ export default function Dashboard() {
               const hasScore = hasAnyScore(subject.items);
               const letterGrade = hasScore ? getLetterGrade(totalGrade) : '?';
               return (
-                <div key={subject.name} className="subjectCard overviewCard" onClick={() => setOverviewMode(false)}>
+                <div
+                  key={subject.name}
+                  className="subjectCard overviewCard"
+                  onClick={() => {
+                    setOverviewMode(false);
+                    setPendingScrollSubject(subject.name);
+                  }}
+                >
                   <div className="overviewCardTop">
                     <span className="overviewName">{subject.name}</span>
                     <span className="overviewGrade" style={{ color: getGradeColor(letterGrade) }}>{letterGrade}</span>
@@ -1383,6 +1402,11 @@ export default function Dashboard() {
             return (
               <div
                 key={subject.name}
+                ref={(el) => {
+                  if (el) {
+                    subjectRefs.current[subject.name] = el;
+                  }
+                }}
                 className={`subjectCard expandedCard ${draggedIndex === index ? "dragging" : ""} ${isElectiveStyleCard(subject) ? "electiveCard" : ""}`}
                 draggable
                 onDragStart={(e) => handleDragStart(e, index)}

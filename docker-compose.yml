@@ -26,7 +26,7 @@ services:
       DATABASE_URL: postgresql://${POSTGRES_USER:-sisgrade}:${POSTGRES_PASSWORD:-sisgrade}@db:5432/${POSTGRES_DB:-sisgrade}
       JWT_SECRET: ${JWT_SECRET}
       NODE_ENV: production
-      # CORS mora tačno odgovarati domeni frontenda
+      # CORS needs to match the domain exactly
       CORS_ORIGIN: ${CORS_ORIGIN:-https://1is.crnic.org}
     networks:
       - app
@@ -35,7 +35,6 @@ services:
       - "traefik.enable=true"
       - "traefik.docker.network=localproxy"
 
-      # API na /api (NE stripPrefix)
       - "traefik.http.routers.1is-api.rule=Host(`1is.crnic.org`) && PathPrefix(`/api`)"
       - "traefik.http.routers.1is-api.entrypoints=private-https"
       - "traefik.http.routers.1is-api.tls=true"
@@ -57,7 +56,7 @@ services:
       - "traefik.enable=true"
       - "traefik.docker.network=localproxy"
 
-      # Frontend sve osim /api
+      # Frontend everything except /api
       - "traefik.http.routers.1is.rule=Host(`1is.crnic.org`) && !PathPrefix(`/api`)"
       - "traefik.http.routers.1is.entrypoints=private-https"
       - "traefik.http.routers.1is.tls=true"
