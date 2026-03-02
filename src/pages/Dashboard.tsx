@@ -326,9 +326,13 @@ export default function Dashboard() {
     const savedSubjects = localStorage.getItem(storageKey);
     
     if (savedSubjects) {
-      const parsedSubjects: SubjectData[] = JSON.parse(savedSubjects);
-      if (parsedSubjects.length > 0) {
-        return parsedSubjects;
+      try {
+        const parsedSubjects: SubjectData[] = JSON.parse(savedSubjects);
+        if (parsedSubjects.length > 0) {
+          return parsedSubjects;
+        }
+      } catch {
+        localStorage.removeItem(storageKey);
       }
     }
 

@@ -48,10 +48,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       })
       .catch(() => {
         if (!cancelled) {
-          const token = localStorage.getItem("sis.token");
-          if (token) {
-            setUser({ id: "", email: "" });
-          }
+          localStorage.removeItem("sis.token");
+          setUser(null);
           setLoading(false);
         }
       });

@@ -9,9 +9,9 @@ router.use(authMiddleware);
 
 router.get(
   "/",
-  queryValidator("branchId").notEmpty(),
-  queryValidator("degreeId").notEmpty(),
-  queryValidator("semesterId").notEmpty(),
+  queryValidator("branchId").notEmpty().isLength({ max: 64 }),
+  queryValidator("degreeId").notEmpty().isLength({ max: 64 }),
+  queryValidator("semesterId").notEmpty().isLength({ max: 64 }),
   async (req: Request & { user?: JwtPayload }, res: Response): Promise<void> => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {

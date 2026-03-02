@@ -1,4 +1,4 @@
-import express from "express";
+import express, { type Request, type Response, type NextFunction } from "express";
 import cors from "cors";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
@@ -39,9 +39,6 @@ const generalLimiter = rateLimit({
   message: { error: "Too many requests. Try again later." },
   standardHeaders: true,
   legacyHeaders: false,
-
-  validate: { xForwardedForHeader: false },
-
   keyGenerator: (req) => req.ip ?? "unknown",
 });
 app.use(generalLimiter);
@@ -51,6 +48,11 @@ app.get("/", (_req, res) => res.json({ service: "sis-grade-api", ok: true }));
 app.use("/api/auth", authRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api/subject-lists", subjectListsRoutes);
+
+app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
+  console.error(err);
+  res.status(500).json({ error: "Internal server error" });
+});
 
 const PORT = Number(process.env.PORT) || 3000;
 

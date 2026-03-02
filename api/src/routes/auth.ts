@@ -5,8 +5,13 @@ import rateLimit from "express-rate-limit";
 import { body, validationResult } from "express-validator";
 import { query } from "../db.js";
 
-const JWT_SECRET = process.env.JWT_SECRET?.trim() || "dev-local-secret-change-me";
-const BCRYPT_ROUNDS = 10;
+function requireEnv(name: string): string {
+  const v = process.env[name]?.trim();
+  if (!v) throw new Error(`${name} environment variable is required`);
+  return v;
+}
+const JWT_SECRET = requireEnv("JWT_SECRET");
+const BCRYPT_ROUNDS = 12;
 
 const authRateLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -32,7 +37,7 @@ function generateToken(userId: string, email: string, username?: string): string
   return jwt.sign(
     { userId, email, username } as JwtPayload,
     JWT_SECRET,
-    { expiresIn: "7d" }
+    { algorithm: "HS256", expiresIn: "7d" }
   );
 }
 
@@ -40,7 +45,12 @@ router.post(
   "/register",
   authRateLimiter,
   body("email").isEmail(),
-  body("username").trim().isLength({ min: 2, max: 64 }).withMessage("Username must be 2–64 characters"),
+  body("username")
+    .trim()
+    .isLength({ min: 2, max: 64 })
+    .withMessage("Username must be 2–64 characters")
+    .matches(/^[^@]+$/)
+    .withMessage("Username cannot contain @"),
   body("password").isLength({ min: 8, max: 128 }).withMessage("Password must be at least 8 characters"),
   async (req: Request, res: Response): Promise<void> => {
     const errors = validationResult(req);
@@ -62,7 +72,7 @@ router.post(
     } catch (err: unknown) {
       const e = err as { code?: string };
       if (e.code === "23505") {
-        res.status(409).json({ error: "Email already registered" });
+        res.status(409).json({ error: "Account already exists" });
         return;
       }
       throw err;
@@ -74,7 +84,7 @@ router.post(
   "/login",
   authRateLimiter,
   body("identifier").trim().notEmpty().withMessage("Email or username is required"),
-  body("password").notEmpty(),
+  body("password").notEmpty().isLength({ max: 128 }),
   async (req: Request, res: Response): Promise<void> => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -82,10 +92,10 @@ router.post(
       return;
     }
     const { identifier, password } = req.body as { identifier: string; password: string };
-    const normalizedIdentifier = identifier.trim().toLowerCase();
+    const trimmed = identifier.trim();
     const result = await query<{ id: string; password_hash: string; email: string; username: string | null }>(
-      "SELECT id, password_hash, email, username FROM users WHERE lower(email) = $1 OR lower(username) = $1",
-      [normalizedIdentifier]
+      "SELECT id, password_hash, email, username FROM users WHERE lower(email) = lower($1) OR username = $1",
+      [trimmed]
     );
     if (result.rows.length === 0) {
       res.status(401).json({ error: "Invalid email/username or password" }); // generic message to not leak information
@@ -110,8 +120,17 @@ router.get("/me", async (req: Request, res: Response): Promise<void> => {
   }
   const token = authHeader.slice(7);
   try {
-    const payload = jwt.verify(token, JWT_SECRET) as JwtPayload;
-    res.json({ user: { id: payload.userId, email: payload.email, username: payload.username } });
+    const payload = jwt.verify(token, JWT_SECRET, { algorithms: ["HS256"] }) as unknown as JwtPayload;
+    const result = await query<{ email: string; username: string | null }>(
+      "SELECT email, username FROM users WHERE id = $1",
+      [payload.userId]
+    );
+    if (result.rows.length === 0) {
+      res.status(401).json({ error: "User no longer exists" });
+      return;
+    }
+    const row = result.rows[0];
+    res.json({ user: { id: payload.userId, email: row.email, username: row.username ?? undefined } });
   } catch {
     res.status(401).json({ error: "Invalid or expired token" });
   }
