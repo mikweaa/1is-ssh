@@ -1,4 +1,16 @@
 services:
+
+  cloudflare-ddns:
+    image: oznu/cloudflare-ddns:latest
+    restart: unless-stopped
+    environment:
+      API_TOKEN: ${CF_API_TOKEN}
+      ZONE: 1nteger.org
+      SUBDOMAIN: "@"
+      PROXIED: "true"
+    networks:
+      - app
+
   db:
     image: postgres:16-alpine
     restart: unless-stopped

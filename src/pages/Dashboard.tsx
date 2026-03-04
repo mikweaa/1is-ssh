@@ -54,10 +54,6 @@ function getGradeStatus(grade: string): string {
   return '';
 }
 
-function isSubjectComplete(items: GradeItem[]): boolean {
-  return items.every(item => item.score !== null && item.weight !== null && item.weight > 0); 
-}
-
 function areWeightsComplete(items: GradeItem[]): boolean {
   return items.every(item => item.weight !== null && item.weight > 0); // this is for grade prediction
 }
@@ -1392,11 +1388,11 @@ export default function Dashboard() {
           ) : (
           subjects.map((subject, index) => {
             const totalGrade = calculateTotalGrade(subject.items);
-            const hasAnyInput = subject.items.some(item => item.score !== null || (item.weight ?? 0) > 0);
             const hasScore = hasAnyScore(subject.items);
             const letterGrade = hasScore ? getLetterGrade(totalGrade) : '?';
             const weightsComplete = areWeightsComplete(subject.items);
-            const gradePredictions = weightsComplete && hasScore ? getGradePredictions(subject.items) : [];
+            const canPredict = weightsComplete && hasScore;
+            const gradePredictions = canPredict ? getGradePredictions(subject.items) : [];
             const predictionGroups = [
               { title: 'A', grades: ['A', 'A-'] },
               { title: 'B', grades: ['B+', 'B', 'B-'] },
@@ -1672,32 +1668,27 @@ export default function Dashboard() {
                     <span>Letter Grade:</span>
                     <span className="letterGradeValue" style={{ color: getGradeColor(letterGrade) }}>{letterGrade}{getGradeStatus(letterGrade)}</span>
                   </div>
-                  {!areWeightsComplete(subject.items) && hasAnyInput && (
-                    <div className="incompleteWarning">Define weights to see grade prediction</div>
-                  )}
-                  {areWeightsComplete(subject.items) && !isSubjectComplete(subject.items) && hasAnyInput && (
-                    <div className="incompleteWarning">Not all inputs defined</div>
-                  )}
                 </div>
-                {weightsComplete && hasScore && (
-                  <div className="gradePrediction">
-                    <div className="gradePredictionTitle">Grade prediction (required average on remaining)</div>
-                    <div className="gradePredictionList">
-                      {predictionGroups.map((group) => (
-                        <div key={group.title} className="gradePredictionColumn">
-                          {gradePredictions
-                            .filter(({ grade }) => group.grades.includes(grade))
-                            .map(({ grade, required }) => (
-                              <div key={grade} className="gradePredictionRow">
-                                <span className="gradePredictionGrade">{grade === "C" ? "Pass" : grade}</span>
-                                <span className="gradePredictionValue">{required}</span>
-                              </div>
-                            ))}
-                        </div>
-                      ))}
-                    </div>
+                <div className="gradePrediction">
+                  <div className="gradePredictionTitle">
+                    Grade prediction (Input all grade weights for prediction to work)
                   </div>
-                )}
+                  <div className="gradePredictionList">
+                    {predictionGroups.map((group) => (
+                      <div key={group.title} className="gradePredictionColumn">
+                        {group.grades.map((g) => {
+                          const pred = gradePredictions.find(({ grade }) => grade === g);
+                          return (
+                            <div key={g} className="gradePredictionRow">
+                              <span className="gradePredictionGrade">{g === "C" ? "Pass" : g}</span>
+                              <span className="gradePredictionValue">{canPredict && pred ? pred.required : "—"}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
             );
           }) )}
