@@ -270,6 +270,8 @@ export default function Dashboard() {
   const editInputRef = useRef<HTMLSpanElement>(null);
   const [pendingScrollSubject, setPendingScrollSubject] = useState<string | null>(null);
   const subjectRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const [resetSubjectName, setResetSubjectName] = useState<string | null>(null);
+  const [showResetSemesterConfirm, setShowResetSemesterConfirm] = useState(false);
 
   const [preferSingleTapEdit, setPreferSingleTapEdit] = useState(false);
   useEffect(() => {
@@ -737,7 +739,30 @@ export default function Dashboard() {
     setSubjects(subjects.filter((s) => s.name !== subjectName));
     scheduleUndoCleanup();
   }
-  
+
+  function resetSubject(subjectName: string) {
+    setSubjects(
+      subjects.map((subject) =>
+        subject.name === subjectName
+          ? {
+              ...subject,
+              items: subject.items.map((item) => ({ ...item, score: null, weight: null })),
+            }
+          : subject
+      )
+    );
+    setResetSubjectName(null);
+  }
+
+  function resetSemester() {
+    if (!currentSemesterId || !activeBranchId || !activeDegreeId) return;
+    const storageKey = `subjects_${activeBranchId}_${activeDegreeId}_${currentSemesterId}`;
+    localStorage.removeItem(storageKey);
+    const freshSubjects = loadSubjectsForSemester(currentSemesterId);
+    setSubjects(freshSubjects);
+    setShowResetSemesterConfirm(false);
+  }
+
   function undoLastDelete() {
     setDeletedActions((prev) => {
       if (prev.length === 0) return prev;
@@ -1336,21 +1361,34 @@ export default function Dashboard() {
             <span className="dashboardGPA">
               Current GPA: <span style={{ color: '#7bccac', fontWeight: '700' }}>{calculateOverallGPA().toFixed(2)}</span>
             </span>
-            <span className="dashboardLegend">
-              <span className="legendTitle">Grade Scale:</span>
-              <span className="legendItems">
-                {legendGrades.map((grade) => (
-                  <span key={grade} className="legendItem">
-                    <span className="legendGrade" style={{ color: getGradeColor(grade) }}>
-                      {grade === "C" ? "C (Pass)" : grade === "E" ? "E (Fail)" : grade}
+            <div className="dashboardLegendWrap">
+              <span className="dashboardLegend">
+                <span className="legendTitle">Grade Scale:</span>
+                <span className="legendItems">
+                  {legendGrades.map((grade) => (
+                    <span key={grade} className="legendItem">
+                      <span className="legendGrade" style={{ color: getGradeColor(grade) }}>
+                        {grade === "C" ? "C (Pass)" : grade === "E" ? "E (Fail)" : grade}
+                      </span>
+                      <span className="legendScore">
+                        {grade === "E" ? ` <${passCutoff}` : ` ${getMinScoreForGrade(grade)}+`}
+                      </span>
                     </span>
-                    <span className="legendScore">
-                      {grade === "E" ? ` <${passCutoff}` : ` ${getMinScoreForGrade(grade)}+`}
-                    </span>
-                  </span>
-                ))}
+                  ))}
+                </span>
               </span>
-            </span>
+              <button
+                type="button"
+                className="resetSemesterBtn"
+                onClick={() => setShowResetSemesterConfirm(true)}
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                  <path d="M3 3v5h5" />
+                </svg>
+                Reset Semester
+              </button>
+            </div>
           </div>
         </div>
 
@@ -1503,13 +1541,27 @@ export default function Dashboard() {
                         </div>
                       )}
                   </div>
-                  <button
-                    className="deleteSubjectBtn"
-                    onClick={() => removeSubject(subject.name)}
-                    title="Delete subject"
-                  >
-                    ✕
-                  </button>
+                  <div className="cardHeaderActions">
+                    <button
+                      type="button"
+                      className="resetSubjectBtn"
+                      onClick={() => setResetSubjectName(subject.name)}
+                      title="Reset subject"
+                      aria-label="Reset subject"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                        <path d="M3 3v5h5" />
+                      </svg>
+                    </button>
+                    <button
+                      className="deleteSubjectBtn"
+                      onClick={() => removeSubject(subject.name)}
+                      title="Delete subject"
+                    >
+                      ✕
+                    </button>
+                  </div>
                 </div>
 
                 <div className="gradeItems">
@@ -1689,6 +1741,47 @@ export default function Dashboard() {
                     ))}
                   </div>
                 </div>
+                {resetSubjectName === subject.name && (
+                  <div
+                    className="resetSubjectOverlay"
+                    role="dialog"
+                    aria-modal="true"
+                    aria-labelledby="resetSubjectOverlayTitle"
+                    onClick={() => setResetSubjectName(null)}
+                  >
+                    <div
+                      className="resetSubjectOverlayBackdrop"
+                      aria-hidden="true"
+                    />
+                    <div
+                      className="resetSubjectOverlayContent"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <p id="resetSubjectOverlayTitle" className="resetSubjectOverlayTitle">
+                        Are you sure you want to reset the subject?
+                      </p>
+                      <p className="resetSubjectOverlaySubtitle">
+                        All grades and weights for this subject will be cleared.
+                      </p>
+                      <div className="resetSubjectOverlayActions">
+                        <button
+                          type="button"
+                          className="resetSubjectOverlayCancel"
+                          onClick={() => setResetSubjectName(null)}
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="button"
+                          className="resetSubjectOverlayConfirm"
+                          onClick={() => resetSubject(subject.name)}
+                        >
+                          Reset
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             );
           }) )}
@@ -1861,6 +1954,39 @@ export default function Dashboard() {
         </div>
       </main>
       
+      {showResetSemesterConfirm && (
+        <div
+          className="resetSemesterOverlay"
+          role="dialog"
+          aria-modal="true"
+          onClick={() => setShowResetSemesterConfirm(false)}
+        >
+          <div className="resetSemesterOverlayBackdrop" aria-hidden="true" />
+          <div className="resetSemesterOverlayContent" onClick={(e) => e.stopPropagation()}>
+            <p className="resetSemesterOverlayTitle">Reset entire semester?</p>
+            <p className="resetSemesterOverlaySubtitle">
+              This will clear all grades, weights, and custom subjects for this semester and restore the default subject list.
+            </p>
+            <div className="resetSemesterOverlayActions">
+              <button
+                type="button"
+                className="resetSubjectOverlayCancel"
+                onClick={() => setShowResetSemesterConfirm(false)}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="resetSemesterOverlayConfirmBtn"
+                onClick={resetSemester}
+              >
+                Reset Semester
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {!overviewMode && showUndoPopup && deletedActions.length > 0 && (
         <div className="undoPopup">
           {(() => {
@@ -1881,3 +2007,6 @@ export default function Dashboard() {
     </div>
   );
 }
+
+
+

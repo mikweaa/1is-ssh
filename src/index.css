@@ -3689,6 +3689,15 @@ body {
 
 /* Overview compact cards: styled via mobile media query, but structurally always present when overviewMode is on */
 
+.dashboardLegendWrap {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+  margin-left: auto;
+  flex-wrap: wrap;
+}
+
 .dashboardLegend {
   display: flex;
   align-items: center;
@@ -3696,7 +3705,28 @@ body {
   flex-wrap: wrap;
   font-size: 20px;
   color: #0f3f2c;
-  margin-left: auto;
+}
+
+.resetSemesterBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: transparent;
+  border: 1px solid #d9d9d9;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-family: inherit;
+  cursor: pointer;
+  color: #999;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.resetSemesterBtn:hover {
+  border-color: #ef4444;
+  color: #ef4444;
 }
 
 .legendTitle {
@@ -3726,7 +3756,7 @@ body {
 }
 
 @media (max-width: 976px) {
-  .dashboardLegend {
+  .dashboardLegendWrap {
     margin-top: 16px;
   }
 
@@ -3738,6 +3768,23 @@ body {
 @media (max-width: 768px) {
   .dashboardGPA {
     display: none;
+  }
+
+  .dashboardLegendWrap {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .resetSemesterBtn {
+    padding: 12px 20px;
+    font-size: 16px;
+    min-height: 48px;
+    margin-top: 12px;
+  }
+
+  .resetSemesterBtn svg {
+    width: 16px;
+    height: 16px;
   }
 
   .dashboardGPAFloat {
@@ -3955,6 +4002,7 @@ body {
   transition: transform 0.2s ease, opacity 0.2s ease;
   display: flex;
   flex-direction: column;
+  position: relative;
 }
 
 .expandedCard:hover {
@@ -3983,6 +4031,13 @@ body {
   font-size: 18px;
   font-weight: 600;
   line-height: 1.2;
+}
+
+.cardHeaderActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
 }
 
 .cardHeader h3 {
@@ -4052,10 +4107,175 @@ body {
   transition: all 0.2s ease;
 }
 
+.resetSubjectBtn {
+  background: #6b7280;
+  border: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.resetSubjectBtn:hover {
+  filter: brightness(0.9);
+  transform: scale(1.1);
+}
+
 .deleteSubjectBtn:hover,
 .deleteItemBtn:hover {
   filter: brightness(0.9);
   transform: scale(1.1);
+}
+
+/* Reset subject confirmation overlay */
+.resetSubjectOverlay {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.resetSubjectOverlayBackdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.resetSubjectOverlayContent {
+  position: relative;
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px;
+  max-width: 360px;
+  width: 100%;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+}
+
+.resetSubjectOverlayTitle {
+  margin: 0 0 8px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.resetSubjectOverlaySubtitle {
+  margin: 0 0 20px 0;
+  font-size: 14px;
+  color: #444;
+  line-height: 1.4;
+}
+
+.resetSubjectOverlayActions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.resetSubjectOverlayCancel,
+.resetSubjectOverlayConfirm {
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.resetSubjectOverlayCancel {
+  background: #e5e7eb;
+  color: #1a1a1a;
+  border: none;
+}
+
+.resetSubjectOverlayCancel:hover {
+  background: #d1d5db;
+}
+
+.resetSubjectOverlayConfirm {
+  background: #22a76d;
+  color: white;
+  border: none;
+}
+
+.resetSubjectOverlayConfirm:hover {
+  filter: brightness(0.9);
+}
+
+/* Reset semester overlay */
+.resetSemesterOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.resetSemesterOverlayBackdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.resetSemesterOverlayContent {
+  position: relative;
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px;
+  max-width: 400px;
+  width: 100%;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+}
+
+.resetSemesterOverlayTitle {
+  margin: 0 0 8px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.resetSemesterOverlaySubtitle {
+  margin: 0 0 20px 0;
+  font-size: 14px;
+  color: #444;
+  line-height: 1.5;
+}
+
+.resetSemesterOverlayActions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.resetSemesterOverlayConfirmBtn {
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  background: #ef4444;
+  color: white;
+  border: none;
+  transition: background 0.2s ease;
+}
+
+.resetSemesterOverlayConfirmBtn:hover {
+  background: #dc2626;
 }
 
 .gradeItems {
@@ -4168,6 +4388,18 @@ body {
   outline: none;
   border-color: #7bccac;
   box-shadow: 0 0 0 2px rgba(123, 204, 172, 0.1);
+}
+
+/* Prevent iOS zoom on focus: inputs need 16px+ on mobile */
+@media (max-width: 768px) {
+  .gradeInputRow input,
+  .weightInputWrapper input,
+  .gradeInput input,
+  .activityInput input,
+  .subjectNameInput,
+  .objectNameInput {
+    font-size: 16px;
+  }
 }
 
 .deleteItemBtn {
@@ -4347,6 +4579,13 @@ body {
   outline: none;
   border-color: #7bccac;
   box-shadow: 0 0 0 2px rgba(123, 204, 172, 0.1);
+}
+
+@media (max-width: 768px) {
+  .subjectNameInput,
+  .objectNameInput {
+    font-size: 16px;
+  }
 }
 
 .addSubjectActions,
@@ -5505,6 +5744,33 @@ body {
   color: #7bccac;
 }
 
+[data-theme="dark"] .resetSemesterBtn {
+  border-color: #333338;
+  color: #6b7280;
+}
+
+[data-theme="dark"] .resetSemesterBtn:hover {
+  border-color: #ef4444;
+  color: #ef4444;
+}
+
+[data-theme="dark"] .resetSemesterOverlayBackdrop {
+  background: rgba(0, 0, 0, 0.6);
+}
+
+[data-theme="dark"] .resetSemesterOverlayContent {
+  background: #1c1c20;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+[data-theme="dark"] .resetSemesterOverlayTitle {
+  color: #e2e4e9;
+}
+
+[data-theme="dark"] .resetSemesterOverlaySubtitle {
+  color: #9ca3af;
+}
+
 [data-theme="dark"] .subjectNameInput,
 [data-theme="dark"] .objectNameInput {
   background: #16161a;
@@ -5570,6 +5836,32 @@ body {
 
 [data-theme="dark"] .gradePredictionFooter {
   border-top-color: #2a2a2e;
+}
+
+[data-theme="dark"] .resetSubjectOverlayBackdrop {
+  background: rgba(0, 0, 0, 0.6);
+}
+
+[data-theme="dark"] .resetSubjectOverlayContent {
+  background: #1c1c20;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+[data-theme="dark"] .resetSubjectOverlayTitle {
+  color: #e2e4e9;
+}
+
+[data-theme="dark"] .resetSubjectOverlaySubtitle {
+  color: #9ca3af;
+}
+
+[data-theme="dark"] .resetSubjectOverlayCancel {
+  background: #2a2a2e;
+  color: #e2e4e9;
+}
+
+[data-theme="dark"] .resetSubjectOverlayCancel:hover {
+  background: #3a3a3e;
 }
 
 [data-theme="dark"] .gradeInput label {
