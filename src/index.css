@@ -2401,7 +2401,7 @@ body {
 }
 
 .loginTitle {
-  font-size: 44px;
+  font-size: 30px;
   font-weight: 500;
   margin: 0 0 22px;
   color: #0f3f2c;
@@ -2449,6 +2449,12 @@ body {
   box-shadow: 0 0 0 2px rgba(15, 63, 44, 0.08);
 }
 
+textarea.loginInput {
+  height: auto;
+  min-height: 100px;
+  resize: vertical;
+}
+
 .loginButton {
   margin-top: 10px;
   background: #7bccac;
@@ -2484,6 +2490,17 @@ body {
   color: #c00;
   font-size: 14px;
   margin: 0 0 4px;
+}
+
+.notFoundText {
+  margin: 0 0 20px;
+  font-size: 16px;
+  color: #1f2937;
+}
+
+.notFoundSeparator {
+  color: #6b7280;
+  user-select: none;
 }
 
 .loginDivider {
@@ -5546,6 +5563,14 @@ body {
 
 [data-theme="dark"] .loginError {
   color: #f87171;
+}
+
+[data-theme="dark"] .notFoundText {
+  color: #9ca3af;
+}
+
+[data-theme="dark"] .notFoundSeparator {
+  color: #6b7280;
 }
 
 [data-theme="dark"] .authInput {

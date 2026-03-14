@@ -83,6 +83,36 @@ export async function login(identifier: string, password: string): Promise<AuthR
   return (await res.json()) as AuthResponse;
 }
 
+export async function forgotPassword(email: string): Promise<{ message: string }> {
+  let res: Response;
+  try {
+    res = await fetch(`${BASE}/api/auth/forgot-password`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: email.trim().toLowerCase() }),
+    });
+  } catch {
+    throw new Error("Check your connection.");
+  }
+  if (!res.ok) throw new Error(await getErrorMessage(res));
+  return (await res.json()) as { message: string };
+}
+
+export async function resetPassword(token: string, password: string): Promise<{ message: string }> {
+  let res: Response;
+  try {
+    res = await fetch(`${BASE}/api/auth/reset-password`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token, password }),
+    });
+  } catch {
+    throw new Error("Check your connection.");
+  }
+  if (!res.ok) throw new Error(await getErrorMessage(res));
+  return (await res.json()) as { message: string };
+}
+
 export async function getMe(): Promise<User | null> {
   const token = getToken();
   if (!token) return null;

@@ -17,17 +17,37 @@ export default function Register() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
-    if (password !== confirmPassword) {
-      setError("Passwords do not match");
+
+    const tUsername = username.trim();
+    const tEmail = email.trim();
+    const tPassword = password.trim();
+    const tConfirm = confirmPassword.trim();
+
+    if (!tUsername) {
+      setError("Username is required");
       return;
     }
-    if (password.length < 8) {
+    if (!tEmail) {
+      setError("E-Mail is required");
+      return;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(tEmail)) {
+      setError("Please enter a valid email address");
+      return;
+    }
+    if (tPassword.length < 8) {
       setError("Password must be at least 8 characters");
       return;
     }
+    if (tPassword !== tConfirm) {
+      setError("Passwords do not match");
+      return;
+    }
+
     setSubmitting(true);
     try {
-      await register(email, password, username);
+      await register(tEmail, tPassword, tUsername);
       navigate("/login", { replace: true });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Registration failed");

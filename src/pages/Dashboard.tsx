@@ -419,6 +419,79 @@ export default function Dashboard() {
     return [...mandatoryCourses, ...electives];
   };
 
+  const buildBaselineSubjectsForSemester = (semId: string): SubjectData[] => {
+    if (!activeBranchId || !activeDegreeId || !semId) return [];
+
+    const isPhdProgram = activeDegreeId === "phd" || activeDegreeId === "phd-ib" || activeDegreeId === "phd-fin";
+    if (isPhdProgram) {
+      return [];
+    }
+
+    const isMedBlankSlate = isMedBlankSlateSemester(activeBranchId, activeDegreeId, semId);
+    const isIULawBlankSlate = isIULawBlankSlateSemester(activeBranchId, activeDegreeId, semId);
+    const isMEMasterBlankSlate = isMEMasterBlankSlateSemester(activeBranchId, activeDegreeId, semId);
+    const isIEMasterBlankSlate = isIEMasterBlankSlateSemester(activeBranchId, activeDegreeId, semId);
+    const isCSEMasterBlankSlate = isCSEMasterBlankSlateSemester(activeBranchId, activeDegreeId, semId);
+    const isSEMasterBlankSlate = isSEMasterBlankSlateSemester(activeBranchId, activeDegreeId, semId);
+    const isECONMasterBlankSlate = isECONMasterBlankSlateSemester(activeBranchId, activeDegreeId, semId);
+    const isHWGMBABlankSlate = isHWGMBABlankSlateSemester(activeBranchId, activeDegreeId, semId);
+
+    if (
+      isMedBlankSlate ||
+      isIULawBlankSlate ||
+      isMEMasterBlankSlate ||
+      isIEMasterBlankSlate ||
+      isCSEMasterBlankSlate ||
+      isSEMasterBlankSlate ||
+      isECONMasterBlankSlate ||
+      isHWGMBABlankSlate
+    ) {
+      return [];
+    }
+
+    const mandatoryCourses = getSemesterMandatoryCourses(activeBranchId, activeDegreeId, semId).map((course) => ({
+      name: formatCourseName(course.id, course.name),
+      code: course.id,
+      items: [
+        { id: `${course.id}-1`, name: "Midterm", score: null, weight: null, type: "midterm" as const },
+        { id: `${course.id}-2`, name: "Quiz 1", score: null, weight: null, type: "quiz" as const },
+        { id: `${course.id}-3`, name: "Quiz 2", score: null, weight: null, type: "quiz" as const },
+        { id: `${course.id}-4`, name: "Final", score: null, weight: null, type: "final" as const },
+      ],
+    }));
+
+    const electiveCount = getSemesterElectiveCount(activeBranchId, activeDegreeId, semId);
+    const foreignLanguageLevel = getSemesterForeignLanguageElective(activeBranchId, activeDegreeId, semId);
+    const slotLabels = getElectiveSlotLabels(activeBranchId, activeDegreeId, semId);
+
+    const electives = Array.from({ length: electiveCount }, (_, i) => ({
+      name: slotLabels[i] ?? `Elective ${i + 1}`,
+      code: `ELEC-${i + 1}`,
+      items: [
+        { id: `ELEC-${i + 1}-1`, name: "Midterm", score: null, weight: null, type: "midterm" as const },
+        { id: `ELEC-${i + 1}-2`, name: "Quiz 1", score: null, weight: null, type: "quiz" as const },
+        { id: `ELEC-${i + 1}-3`, name: "Quiz 2", score: null, weight: null, type: "quiz" as const },
+        { id: `ELEC-${i + 1}-4`, name: "Final", score: null, weight: null, type: "final" as const },
+      ],
+    }));
+
+    if (foreignLanguageLevel) {
+      const foreignLangElective: SubjectData = {
+        name: getDefaultForeignLanguageName(foreignLanguageLevel),
+        code: `FLANG-${foreignLanguageLevel}`,
+        items: [
+          { id: `FLANG-${foreignLanguageLevel}-1`, name: "Midterm", score: null, weight: null, type: "midterm" as const },
+          { id: `FLANG-${foreignLanguageLevel}-2`, name: "Quiz 1", score: null, weight: null, type: "quiz" as const },
+          { id: `FLANG-${foreignLanguageLevel}-3`, name: "Quiz 2", score: null, weight: null, type: "quiz" as const },
+          { id: `FLANG-${foreignLanguageLevel}-4`, name: "Final", score: null, weight: null, type: "final" as const },
+        ],
+      };
+      return [...mandatoryCourses, ...electives, foreignLangElective];
+    }
+
+    return [...mandatoryCourses, ...electives];
+  };
+
   const [subjects, setSubjects] = useState<SubjectData[]>(() =>
     loadSubjectsForSemester(currentSemesterId || "")
   );
@@ -458,7 +531,7 @@ export default function Dashboard() {
     }
   }, [activeBranchId, activeDegreeId, currentSemesterId, isAuthenticated, phdSemesterCount, customSemesterCount, isCustomSetup]);
 
-  // Focus editable title and place cursor at end (no jump)
+  // When a subject enters edit mode, sync the text and place the caret at the end once.
   useEffect(() => {
     if (!editingSubjectName || !editInputRef.current) return;
 
@@ -483,7 +556,9 @@ export default function Dashboard() {
       selection.removeAllRanges();
       selection.addRange(range);
     }
-  }, [editingSubjectName, editingSubjectNewName, subjects, isUnnamedElective]);
+  // Intentionally only run when a subject enters edit mode, not on every keystroke
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editingSubjectName]);
 
   useEffect(() => {
     if (!activeBranchId || !activeDegreeId || !currentSemesterId) return;
@@ -741,15 +816,33 @@ export default function Dashboard() {
   }
 
   function resetSubject(subjectName: string) {
+    const baselineSubjects =
+      currentSemesterId && activeBranchId && activeDegreeId
+        ? buildBaselineSubjectsForSemester(currentSemesterId)
+        : [];
+
     setSubjects(
-      subjects.map((subject) =>
-        subject.name === subjectName
-          ? {
-              ...subject,
-              items: subject.items.map((item) => ({ ...item, score: null, weight: null })),
-            }
-          : subject
-      )
+      subjects.map((subject) => {
+        if (subject.name !== subjectName) return subject;
+
+        const baseline =
+          subject.code != null
+            ? baselineSubjects.find((s) => s.code === subject.code)
+            : null;
+
+        if (baseline) {
+          return {
+            ...baseline,
+            items: baseline.items.map((item) => ({ ...item, score: null, weight: null })),
+          };
+        }
+
+        return {
+          ...subject,
+          name: "",
+          items: subject.items.map((item) => ({ ...item, score: null, weight: null })),
+        };
+      })
     );
     setResetSubjectName(null);
   }

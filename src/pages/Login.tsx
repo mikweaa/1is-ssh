@@ -79,8 +79,10 @@ export default function Login() {
               </Link>
             </div>
             <div className="loginLinkRow">
-              <span>Forgot your password?</span>
-              <span className="loginLinkDisabled">Reset</span>
+              <span>Forgot your password? </span>
+              <Link to="/forgot-password" className="loginLink">
+                Reset it
+              </Link>
             </div>
           </div>
         </section>
